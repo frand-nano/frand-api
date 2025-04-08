@@ -1,3 +1,22 @@
-target
+# cargo new 에 의해 생성됨
+
+/target
+**/*.rs.bk
 Cargo.lock
-.env
+
+# 비밀 정보 / 환경 변수
+# .env 파일들은 민감 정보를 포함할 수 있으므로 Git에 포함하지 않음
+# 단, .env.example 파일은 설정 예시를 위해 포함
+.env*
+!.env.example
+!.env.*.example
+
+# IDE 및 편집기 관련 파일
+/.idea
+/.vscode
+*.swp
+*.swo
+
+# 운영체제 생성 파일
+.DS_Store
+Thumbs.db
