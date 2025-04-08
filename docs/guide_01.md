@@ -21,6 +21,7 @@
   * `api` 패키지 생성: 라이브러리 형태로 생성
   * 루트 `.gitignore` 파일 설정 (Rust 표준 `.gitignore` 내용 활용, `.env*` 포함 확인)
   * `api/.env.example`, `api/.env.test.example` 파일 생성 (설정 예시 제공)
+  * 루트 및 API 패키지의 `README.md` 파일 생성 (프로젝트 개요 및 사용 방법 문서화)
 
 ## 2. `api` 패키지 기본 구조 (확정)
   * `api/src/`: 소스 코드 루트
@@ -51,7 +52,7 @@
     - `api/tests/common/mod.rs` (테스트 환경 설정 로드 함수 추가)
     - `api/.env`, `api/.env.test` 파일 생성 및 기본 설정 추가 (예: `ROCKET_PORT=8000`)
   * **Test:** `api/tests/root_test.rs` 작성
-    - 테스트 시작 전 `dotenvy::from_filename(".env.test").ok()` 호출 (또는 `tests/common` 활용)
+    - 테스트 시작 전 `common::setup()` 호출하여 테스트 환경 설정 로드
     - `api::create_rocket()` 호출하여 테스트용 Rocket 인스턴스 생성
     - `rocket::local::blocking::Client::tracked()` 로 테스트 클라이언트 생성
     - 클라이언트의 `get("/")` 메서드로 요청 전송
@@ -67,7 +68,7 @@
     - `simple_logger` 초기화
     - `api::create_rocket()` 호출하여 Rocket 인스턴스 가져오기
     - `.launch()` 메서드로 서버 실행 (`#[rocket::main]` 어트리뷰트 사용)
-  * **Test:** `api/tests/root_test.rs` 재실행하여 테스트 통과 확인
+  * **Test:** `api/tests/root_test.rs` 실행하여 테스트 동작 확인
   * **Docs:** 이 단계의 상세 내용과 결과 파일을 `docs/guide_01.md` 에 기록 (`Cargo.toml` 변경 사항 포함)
 
 ## 4. 테스트 전략 (`api` 패키지)
@@ -78,8 +79,8 @@
   * 각 API 엔드포인트별 성공/실패 케이스 테스트 포함
   * 필요 시 `api/src/` 내부에 단위 테스트(`#[cfg(test)]`) 작성
 
-# 추가 파일
-1.  `./Cargo.toml` (워크스페이스 루트)
+# 실제 구현된 파일
+1. `./Cargo.toml` (워크스페이스 루트)
   ```toml
   [workspace]
   members = [
@@ -87,22 +88,21 @@
   ]
   resolver = "2"
 
-  # 워크스페이스 레벨 패키지 메타데이터 (멤버 패키지에서 상속)
   [workspace.package]
   version = "0.1.0"
   edition = "2021"
   license = "MIT"
   authors = [ "frand-nano <frand.nano@gmail.com>" ]
-
-  # 워크스페이스 레벨 의존성 (선택 사항, 멤버 패키지에서 상속 가능)
-  # [workspace.dependencies]
-  # serde = { version = "1.0", features = ["derive"] }
   ```
-2.  `./api/Cargo.toml` (`api` 패키지)
+
+2. `./api/Cargo.toml` (`api` 패키지)
   ```toml
   [package]
+  edition.workspace = true
+  version.workspace = true
+  authors.workspace = true
+  license.workspace = true
   name = "api"
-  # version, edition, license, authors 정보는 워크스페이스 루트에서 상속받음
 
   [lib]
   name = "api"
@@ -114,15 +114,15 @@
 
   [dependencies]
   rocket = { version = "0.5.1", features = ["json"] }
-  serde = { version = "1.0", features = ["derive"] } # 또는 workspace.dependencies 에서 상속
+  serde = { version = "1.0", features = ["derive"] }
   log = "0.4"
   simple_logger = "5.0"
-  dotenvy = "0.15" # .env 파일 로드를 위해 추가
+  dotenvy = "0.15"
 
   [dev-dependencies]
-  # Rocket 테스트는 dev-dependencies 가 아닌 dependencies 에 rocket 이 필요함
   ```
-3.  `.gitignore`
+
+3. `.gitignore`
   ```gitignore
   # cargo new 에 의해 생성됨
 
@@ -134,8 +134,8 @@
   # .env 파일들은 민감 정보를 포함할 수 있으므로 Git에 포함하지 않음
   # 단, .env.example 파일은 설정 예시를 위해 포함
   .env*
-  !/.env.example
-  !/.env.*.example
+  !.env.example
+  !.env.*.example
 
   # IDE 및 편집기 관련 파일
   /.idea
@@ -147,15 +147,15 @@
   .DS_Store
   Thumbs.db
   ```
-4.  `api/.env.example`
+
+4. `api/.env.example`
   ```dotenv
-  # 개발 환경 변수 예시
   ROCKET_PORT=8000
-  # ROCKET_ADDRESS="0.0.0.0"
-  # DATABASE_URL="개발용_DB_URL"
+  ROCKET_ADDRESS="0.0.0.0"
   ```
-5.  `api/.env.test.example`
+
+5. `api/.env.test.example`
   ```dotenv
-  # 테스트 환경 변수 예시
-  ROCKET_PORT=8001 # 필요시 테스트용 포트 분리
-  # DATABASE_URL="테스트용_DB_URL"
+  ROCKET_PORT=8001
+  ROCKET_ADDRESS="0.0.0.0"
+  ```
