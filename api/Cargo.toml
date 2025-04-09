@@ -1,8 +1,8 @@
 [package]
-edition.workspace = true
-version.workspace = true
-authors.workspace = true
-license.workspace = true
+version = "0.1.1"
+edition = "2021"
+license = "MIT"
+authors = [ "frand-nano <frand.nano@gmail.com>" ]
 name = "api"
 
 [lib]

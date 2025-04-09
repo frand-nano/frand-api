@@ -1,0 +1,40 @@
+
+services:
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    image: frand-api:latest
+    env_file:
+      - .env # api 서비스 자체 설정 + docker compose 변수
+    networks:
+      - frand-api-network
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ..
+      dockerfile: deploy/nginx/Dockerfile
+    image: frand-api-nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # TLS 인증서 마운트
+      - ./secrets/certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+    networks:
+      - frand-api-network
+    restart: unless-stopped
+    env_file:
+      - .env # nginx 설정 파일 내 변수 치환용
+    environment:
+      # 기본값 설정 (필요시 .env로 오버라이드)
+      - NGINX_DOMAIN=localhost
+      - TLS_CERT_FILE=cert.pem
+      - TLS_KEY_FILE=privkey.pem
+
+networks:
+  frand-api-network:
+    driver: bridge

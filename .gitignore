@@ -1,6 +1,6 @@
 # cargo new 에 의해 생성됨
 
-/target
+target
 **/*.rs.bk
 Cargo.lock
 
@@ -10,6 +10,7 @@ Cargo.lock
 .env*
 !.env.example
 !.env.*.example
+secrets
 *.pem
 
 # IDE 및 편집기 관련 파일
