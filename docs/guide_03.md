@@ -138,50 +138,36 @@ DATABASE_NAME=frand_api_db
 
 ## 3. `deploy/docker-compose.yml` (부분)
 ```yaml
-version: '3.8'
-
 services:
   # ... (기존 nginx, api 등 서비스 정의)
 
   api:
     # ... (기존 api 서비스 빌드 및 환경 설정)
     environment:
-      # .env 파일 로드를 가정하거나, 여기에 직접 변수 설정 가능
-      DATABASE_USER: ${DATABASE_USER} # .env 파일 값 참조
-      DATABASE_PASS: ${DATABASE_PASS}
       DATABASE_HOST: mongo # Docker 내부 네트워크에서 mongo 서비스 이름으로 접근
-      DATABASE_PORT: ${DATABASE_PORT}
-      DATABASE_NAME: ${DATABASE_NAME}
-      # ROCKET_ADDRESS: 0.0.0.0 # 외부 접근 허용 설정 확인
+    networks:
+      - frand-api-network
+    restart: unless-stopped
     depends_on:
       - mongo # api 서비스 시작 전에 mongo 서비스가 실행되도록 함
-    networks: # api와 mongo가 같은 네트워크에 있도록 설정
-      - frand-api-network # 프로젝트에서 사용하는 네트워크 이름으로 수정
 
   mongo:
-    image: mongo:latest # 최신 MongoDB 이미지 사용
-    container_name: frand_mongo # 컨테이너 이름 지정 (선택 사항)
+    image: mongo:latest
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER} # 초기 루트 사용자 설정 (.env 값 사용)
-      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASS} # 초기 루트 비밀번호 설정 (.env 값 사용)
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASS}
     ports:
-      - "27017:27017" # 호스트와 컨테이너 포트 매핑
+      - "27017:27017"
     volumes:
-      - mongo-data:/data/db # 데이터 영속성을 위한 볼륨 마운트
+      - mongo-data:/data/db
     networks:
-      - frand-api-network # api와 같은 네트워크 사용
+      - frand-api-network
+
+networks:
+  frand-api-network:
+    driver: bridge
 
 volumes:
   mongo-data: # 데이터 저장을 위한 명명된 볼륨 정의
-
-networks: # 서비스 간 통신을 위한 네트워크 정의
-  frand-api-network: # 프로젝트에서 사용하는 네트워크 이름으로 수정
-    # 기존 정의된 네트워크를 사용하거나, 여기서 정의할 수 있음
-    # 예시: 외부에서 생성된 네트워크 사용
-    # external: true
-    # 예시: 여기서 bridge 네트워크 정의
-    driver: bridge
-
-# ... (기존 다른 서비스 및 설정)
 ```
