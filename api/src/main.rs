@@ -1,4 +1,4 @@
-use log::info;
+use log::{error, info};
 
 #[rocket::main]
 async fn main() {
@@ -10,9 +10,21 @@ async fn main() {
     
     info!("서버 시작 중...");
     
+    // MongoDB 데이터베이스 인스턴스 초기화
+    let db = match api::services::db::init_db().await {
+        Ok(db) => {
+            info!("MongoDB 연결 성공");
+            db
+        },
+        Err(e) => {
+            error!("MongoDB 연결 실패: {}", e);
+            panic!("MongoDB 연결 실패");
+        }
+    };
+    
     // Rocket 인스턴스 생성 및 실행
-    let rocket = api::create_rocket();
+    let rocket = api::create_rocket(db);
     if let Err(e) = rocket.launch().await {
-        println!("서버 실행 중 오류 발생: {}", e);
+        error!("서버 실행 중 오류 발생: {}", e);
     }
 }

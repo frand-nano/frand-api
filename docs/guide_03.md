@@ -21,7 +21,6 @@
 * **서비스 모듈 추가:** `src/services/db.rs` 파일 생성하여 DB 연결 로직 구현 (`mongodb::Database` 반환).
 * **테스트 케이스 추가:** Rocket 테스트 클라이언트를 사용하여 MongoDB 연결 및 CRUD 작업 확인용 테스트 추가.
 * **Docker 설정:** `docker-compose.yml`에 MongoDB 서비스 추가 및 API 서비스와 연동. 사용할 네트워크 이름은 `frand-api-network` (추가 파일 참조).
-* **프론트엔드 연동:** Yew 애플리케이션에서 `/items` API를 사용하도록 구현 필요.
 
 # 구현 가이드
 ## 1. 의존성 추가
@@ -108,20 +107,6 @@
     - `api` 서비스와 `mongo` 서비스가 통신할 수 있도록 `networks` 설정을 확인하고, 프로젝트에서 사용하는 `frand-api-network` 를 사용하도록 지정한다.
   * 상세 내용은 `추가 파일` 섹션의 `deploy/docker-compose.yml` 참조.
 
-## 9. Yew 프론트엔드 연동 (개요)
-  * `yew` 크레이트의 `Cargo.toml`에 `reqwasm`, `serde` (derive 기능) 의존성을 추가한다.
-  * `yew` 크레이트 내에 `api`의 `Item` 모델과 동일한 구조의 `struct Item`을 정의한다 (`serde::{Serialize, Deserialize}` 적용).
-  * API 호출을 위한 서비스 모듈 또는 함수를 구현한다.
-    - `reqwasm::http::Request` 를 사용하여 `/items` 엔드포인트로 GET, POST, PUT, DELETE 요청을 보낸다.
-    - 요청 본문 및 응답을 `Item` 구조체 또는 `Vec<Item>` 으로 직렬화/역직렬화한다.
-    - 비동기 함수 (`async fn`) 와 `wasm_bindgen_futures::spawn_local` 을 사용하여 API 호출을 처리한다.
-  * Yew 컴포넌트에서 상태 관리 로직을 구현한다.
-    - 아이템 목록을 저장할 상태 (`use_state` 등) 를 정의한다.
-    - 컴포넌트 마운트 시 또는 특정 이벤트 발생 시 API를 호출하여 상태를 업데이트한다.
-    - 사용자 입력 폼을 만들어 새 아이템 생성 (POST), 기존 아이템 수정 (PUT) 기능을 구현한다.
-    - 아이템 목록을 표시하고, 각 아이템 옆에 삭제 (DELETE) 버튼 등을 추가한다.
-    - API 호출 중 로딩 상태, 오류 발생 시 사용자 피드백 등을 처리한다.
-
 # 추가 파일
 ## 1. `api/Cargo.toml` (부분)
 ```toml
@@ -200,14 +185,3 @@ networks: # 서비스 간 통신을 위한 네트워크 정의
 
 # ... (기존 다른 서비스 및 설정)
 ```
-
-## 4. `yew/Cargo.toml` (부분 - 필요 시 추가)
-```toml
-[dependencies]
-yew = { version = "0.21", features = ["csr"] } # 버전은 프로젝트 상황에 맞게 조정
-reqwasm = "0.5"
-serde = { version = "1.0", features = ["derive"] }
-wasm-bindgen-futures = "0.4"
-bson = { version = "2", features = ["serde_with"] } # Item 모델 공유 또는 재정의 시 필요
-
-# ... 기타 의존성

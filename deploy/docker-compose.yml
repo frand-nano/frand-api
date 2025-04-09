@@ -7,9 +7,13 @@ services:
     image: frand-api:latest
     env_file:
       - .env # api 서비스 자체 설정 + docker compose 변수
+    environment:
+      DATABASE_HOST: mongo # Docker 내부 네트워크에서 mongo 서비스 이름으로 접근
     networks:
       - frand-api-network
     restart: unless-stopped
+    depends_on:
+      - mongo # api 서비스 시작 전에 mongo 서비스가 실행되도록 함
 
   nginx:
     build:
@@ -35,6 +39,22 @@ services:
       - TLS_CERT_FILE=cert.pem
       - TLS_KEY_FILE=privkey.pem
 
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASS}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - frand-api-network
+
 networks:
   frand-api-network:
     driver: bridge
+
+volumes:
+  mongo-data: # 데이터 저장을 위한 명명된 볼륨 정의
