@@ -15,6 +15,7 @@ api/
 │   └── services/      # 비즈니스 로직
 ├── tests/             # 통합 테스트
 │   └── common/        # 테스트 공통 유틸리티
+├── Dockerfile         # Docker 이미지 빌드 파일
 ├── .env.example       # 환경 변수 예시
 └── .env.test.example  # 테스트 환경 변수 예시
 ```
@@ -30,6 +31,14 @@ api/
 주요 환경 변수:
 - `ROCKET_PORT`: 서버 포트 (기본값: 8000)
 - `ROCKET_ADDRESS`: 바인딩할 주소 (기본값: "0.0.0.0")
+
+## Docker 배포
+
+API 서비스는 멀티스테이지 Docker 빌드 방식으로 배포됩니다:
+- 빌드 스테이지에서 Rust 컴파일러를 사용해 바이너리 생성
+- 실행 스테이지에서 경량 Debian 이미지에 바이너리 복사하여 실행
+
+배포는 루트 프로젝트의 `deploy` 디렉토리에 있는 Docker Compose 설정을 통해 관리됩니다.
 
 ## 개발하기
 
