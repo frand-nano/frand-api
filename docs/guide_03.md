@@ -7,10 +7,8 @@
 * **연결 풀링:** `mongodb` crate의 기본 설정 사용.
 * **데이터 모델 (`Item`):**
   - `_id`: `Option<bson::oid::ObjectId>`
-  - `name`: `String`
-  - `description`: `Option<String>`
-  - `created_at`: `bson::DateTime`
-  - `updated_at`: `bson::DateTime`
+  - `title`: `String`
+  - `message`: `String`
 * **API 엔드포인트 (`/items`):**
   - `POST /`: 새 Item 생성
   - `GET /`: 모든 Item 목록 조회
@@ -60,44 +58,39 @@
   * 라우트 핸들러에서 `&State<mongodb::Database>` 타입으로 상태에 접근할 수 있다.
 
 ## 5. 데이터 모델 정의
-  * `api/src/models/mod.rs` 에 `item` 모듈을 추가한다 (`pub mod item;`).
-  * `api/src/models/item.rs` 파일을 생성한다.
-  * `Item` 구조체를 정의한다 (확정된 필드 구조는 `정보 요약` 섹션 참조).
+  * `api/src/models/mod.rs`에 `DBItem`, `Item`, `ItemData` 구조체를 직접 정의한다.
     - `serde::{Serialize, Deserialize}` 파생 매크로를 적용한다.
-    - `#[serde(rename_all = "camelCase")]` 속성을 추가한다.
-    - `_id` 필드에 `#[serde(rename = "_id", skip_serializing_if = "Option::is_none")]` 를 적용한다.
-    - `created_at`, `updated_at` 필드는 `bson::DateTime` 타입을 사용하고, 핸들러에서 적절히 값을 설정한다.
-  * (권장) `PUT` 요청 처리를 위해 필드가 `Option` 타입인 `UpdateItemPayload` 구조체를 별도로 정의한다.
+    - `DBItem`과 `Item` 구조체에 `#[serde(rename = "_id", skip_serializing_if = "Option::is_none")]` 를 적용한다.
+    - `Item::from` 구현으로 `DBItem`을 `Item`으로 변환하는 기능 추가한다.
 
 ## 6. API 라우트 및 핸들러 구현 (Rocket)
   * `api/src/routes/mod.rs` 에 `items` 모듈을 추가한다 (`pub mod items;`).
   * `api/src/routes/items.rs` 파일을 생성한다.
   * `Item` 모델에 대한 CRUD 작업을 수행하는 Rocket 라우트 핸들러 함수들을 구현한다 (확정된 엔드포인트는 `정보 요약` 섹션 참조).
     - `#[post("/")]`, `#[get("/")]`, `#[get("/<id>")]`, `#[put("/<id>")]`, `#[delete("/<id>")]` 어트리뷰트를 사용한다.
-    - 각 핸들러는 파라미터로 `&State<mongodb::Database>` 와 필요한 경우 `Json<Item>`, `Json<UpdateItemPayload>` 등을 받는다.
+    - 각 핸들러는 파라미터로 `&State<mongodb::Database>` 와 필요한 경우 `Json<ItemData>` 등을 받는다.
     - 상태에서 데이터베이스 인스턴스를 얻는다: `let db = &*state;`
-    - 컬렉션 객체를 얻는다: `let collection = db.collection::<Item>("items");`
+    - 컬렉션 객체를 얻는다: `let collection = db.collection::<DBItem>("items");`
     - `collection.insert_one()`, `collection.find_one()`, `collection.find()`, `collection.update_one()`, `collection.delete_one()` 등의 메소드를 사용하여 CRUD 작업을 구현한다. `await` 키워드를 사용한다. (각 메소드의 `Result` 처리 중요)
       - `find` 사용 시 `futures::stream::TryStreamExt` 를 사용하여 결과를 `Vec`으로 수집할 수 있다.
-    - 경로 파라미터 `id`는 `String`으로 받아 `bson::oid::ObjectId::parse_str(&id)` 로 변환하고 오류 처리를 수행한다. (오류 시 400 Bad Request 또는 422 Unprocessable Entity 반환 고려)
-    - 생성/수정 시 `created_at`, `updated_at` 타임스탬프를 `bson::DateTime::now()` 로 설정한다.
+    - 경로 파라미터 `id`는 `String`으로 받아 `bson::oid::ObjectId::parse_str(&id)` 로 변환하고 오류 처리를 수행한다. (오류 시 400 Bad Request 반환 고려)
     - 결과를 `Json` 형식 또는 `rocket::response::status` 등으로 반환한다. (성공: 200, 201, 204 / 실패: 400, 404, 500 등)
-  * `main.rs` 에서 `items` 라우트를 마운트한다: `.mount("/items", routes![items::create, items::get_all, items::get_one, items::update, items::delete])` (함수 이름은 실제 구현에 맞게 조정).
+  * `main.rs` 에서 `items` 라우트를 마운트한다: `.mount("/items", routes![items::create_item, items::get_all_items, items::get_item_by_id, items::update_item, items::delete_item])` (함수 이름은 실제 구현에 맞게 조정).
 
 ## 7. 테스트 케이스 추가 (Rocket)
   * `api/tests/` 디렉토리에 `items_test.rs` 파일을 추가한다.
-  * `common` 모듈 또는 테스트 파일 내에서 테스트용 Rocket 인스턴스를 설정한다.
-    - 실제 `init_db`를 호출하여 테스트 데이터베이스를 사용하거나, Mock 객체를 관리 상태에 추가한다.
-  * `rocket::local::blocking::Client` 를 생성하여 API 요청을 보낸다.
+  * `test_common` 모듈 또는 테스트 파일 내에서 테스트용 Rocket 인스턴스를 설정한다.
+    - 실제 `init_db`를 호출하여 테스트 데이터베이스를 사용하도록 한다.
+  * `rocket::local::asynchronous::Client` 를 생성하여 API 요청을 보낸다.
   * 각 CRUD 엔드포인트에 대한 통합 테스트 케이스를 작성한다.
     - Item 생성 -> `POST /items` -> 상태 코드 201 확인, 반환된 ID 확인.
     - Item 전체 조회 -> `GET /items` -> 상태 코드 200 확인, 반환된 목록 확인.
     - Item 단일 조회 -> `GET /items/<id>` -> 상태 코드 200 확인, 반환된 데이터 확인.
     - Item 수정 -> `PUT /items/<id>` -> 상태 코드 200 확인, DB 변경 확인 (별도 조회).
-    - Item 삭제 -> `DELETE /items/<id>` -> 상태 코드 200 또는 204 확인, DB 제거 확인 (별도 조회).
+    - Item 삭제 -> `DELETE /items/<id>` -> 상태 코드 204 확인, DB 제거 확인 (별도 조회).
     - 존재하지 않는 ID 조회/수정/삭제 -> 상태 코드 404 확인.
-    - 잘못된 ID 형식 -> 상태 코드 400 또는 422 확인.
-    - (중요) 각 테스트 후 테스트 데이터를 정리하는 로직을 포함한다.
+    - 잘못된 ID 형식 -> 상태 코드 400 확인.
+    - (중요) 각 테스트 전에 테스트 데이터베이스를 정리하는 로직을 포함한다.
 
 ## 8. Docker 설정
   * `deploy/docker-compose.yml` 파일을 수정하여 MongoDB 서비스를 추가한다.

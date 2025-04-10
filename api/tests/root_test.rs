@@ -1,6 +1,6 @@
-mod common;
+mod test_common;
 
-use common::{load_env_test, setup_test_client, setup_test_db};
+use test_common::{load_env_test, setup_test_client, setup_test_db};
 use rocket::http::Status;
 
 #[tokio::test]

@@ -1,5 +1,6 @@
 use mongodb::{Database, Client as MongoClient, options::ClientOptions};
-use api::{config::AppConfig, models::item::Item};
+use api::config::AppConfig;
+use api::models::DBItem;
 use rocket::local::asynchronous::Client;
 
 pub fn load_env_test() {
@@ -9,7 +10,7 @@ pub fn load_env_test() {
 
 /// 테스트 전 데이터베이스 정리
 async fn clean_db(db: &Database) {
-    let _ = db.collection::<Item>("items").drop(None).await;
+    let _ = db.collection::<DBItem>("items").drop(None).await;
 }
 
 /// 테스트 데이터베이스 생성

@@ -25,12 +25,13 @@ RUN mkdir -p src && \
 # 소스 코드 및 정적 파일 복사
 COPY yew/src ./src
 COPY yew/index.html ./index.html
-COPY yew/style.css ./style.css
 
 # .env 파일 복사 (빌드 시 사용)
 COPY yew/.env ./.env
 
 RUN trunk build --release
+
+COPY yew/static ./dist/static
 
 # --- Nginx 스테이지 ---
 FROM nginx:1.27.4-alpine-slim

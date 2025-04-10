@@ -4,7 +4,7 @@ release = false
 
 [watch]
 # Watch these directories for changes
-watch = ["src", "style.css", "index.html"]
+watch = ["src", "static", "index.html"]
 
 [serve]
 # The address to serve on
