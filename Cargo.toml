@@ -1,0 +1,17 @@
+[workspace]
+members = ["api"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["frand-nano <frand.nano@gmail.com>"]
+
+[workspace.dependencies]
+rocket = "0.5.1"
+tokio = { version = "1.37.0", features = ["full"] }
+serde = { version = "1.0.200", features = ["derive"] }
+serde_json = "1.0.117"
+dotenvy = "0.15.7"
+log = "0.4.21"
+simple_logger = "5.0.0"

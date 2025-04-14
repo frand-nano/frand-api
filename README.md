@@ -1,6 +1,6 @@
-# frand-api
+# Frand API
 
-Rust 기반 REST API 서버 프로젝트 (`frand-api`)입니다.
+Rust 기반 REST API 서버입니다.
 
 ## 프로젝트 구조
 

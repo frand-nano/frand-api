@@ -19,7 +19,7 @@ API 서버 설정은 프로젝트 루트의 `.env` 파일을 통해 관리됩니
 
 *   `ROCKET_ADDRESS`: 서버 바인딩 주소 (기본값: `0.0.0.0`)
 *   `ROCKET_PORT`: 서버 리스닝 포트 (기본값: `8000`)
-*   `LOG_LEVEL`: 로깅 레벨 (기본값: `info`)
+*   `LOG_LEVEL`: 로깅 레벨 (기본값: `info`, 값: `trace`, `debug`, `info`, `warn`, `error`)
 *   (향후 DB 관련 변수 추가 예정)
 
 루트 디렉토리에 `.env` 파일을 생성하고 필요한 값을 설정하십시오. 예시:
