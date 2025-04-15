@@ -37,11 +37,11 @@
 * **초기 구현 목표 (MVP):**
   * `/` 엔드포인트: `GET` 요청 시 "hello world" `text/plain` 응답 (상태 코드 200)
   * `/api/v1/health` 엔드포인트: `GET` 요청 시 표준 `ApiResponse<HealthStatus>` 사용, 성공 시 `data` 필드에 `HealthStatus { status: "ok".to_string() }` 포함 (상태 코드 200, `application/json`)
-* **향후 구현 기능:**
-  * MongoDB 연동 (컬렉션 및 데이터 구조 미정)
+* **향후 구현 기능 (spec_02.md 에서 상세화):**
+  * MongoDB 연동 (컬렉션 및 데이터 구조 미정) -> **spec_02.md 에서 구현**
   * 사용자 인증: Google OAuth 인증 -> JWT 인증 유지 -> API Key 발급 (향후 구현)
-  * Docker 기반 배포 (향후 구현)
-  * 워크스페이스 내 추가 패키지: 프론트엔드, WebSocket 서버 (향후 구현)
+  * Docker 기반 배포 -> **spec_02.md 에서 구현**
+  * 워크스페이스 내 추가 패키지: 프론트엔드 (Yew), WebSocket 서버 (향후 구현) -> **Yew Frontend 는 spec_02.md 에서 구현**
 * **데이터 모델링:**
   * `serde` (`1.0.200`) 를 이용한 Rust 구조체 정의 (`api/src/models/` 또는 기능별 모듈 내 위치)
   * `HealthStatus { status: String }` 구조체는 `api/src/models/health.rs` 에 정의 (확장성 고려).
@@ -158,7 +158,6 @@ frand-api/
     dotenvy = "0.15.7"
     log = "0.4.21"
     simple_logger = "5.0.0"
-    # mongodb = { version = "2.8.2", optional = true } # 향후 사용
     ```
 * **`frand-api/api/Cargo.toml`**:
     ```toml
@@ -180,24 +179,23 @@ frand-api/
     log = { workspace = true }
     simple_logger = { workspace = true }
 
-    # mongodb = { workspace = true, optional = true } # 향후 DB 기능 추가 시 활성화
     ```
 * **`.env` (예시)**:
     ```dotenv
     # filepath: /.env
     ROCKET_ADDRESS=0.0.0.0
-    ROCKET_PORT=8000
+    ROCKET_PORT=8000 # spec_02.md 에서 API_INTERNAL_PORT 로 변경됨
     LOG_LEVEL=info
-    # DATABASE_USER=
-    # DATABASE_PASS=
-    # DATABASE_HOST=localhost
+    # DATABASE_USER= # spec_02.md 에서 필수 설정으로 변경됨
+    # DATABASE_PASS= # spec_02.md 에서 필수 설정으로 변경됨
+    # DATABASE_HOST=localhost # spec_02.md 에서 Docker 환경 고려
     # DATABASE_PORT=27017
     ```
 * **`.env.test` (예시)**:
     ```dotenv
     # filepath: /.env.test
     # 테스트 시 포트 충돌 방지 등 필요시 다른 값 설정
-    ROCKET_PORT=8001
+    ROCKET_PORT=8001 # spec_02.md 에서 API_INTERNAL_PORT 로 변경됨
     LOG_LEVEL=debug
     ```
 
