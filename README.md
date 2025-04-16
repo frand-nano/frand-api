@@ -48,7 +48,4 @@ API 테스트 실행 전 프로젝트 루트에 `.env.test` 파일을 필요에 
 
 ## 상세 정보
 
-프로젝트의 자세한 설계 및 구현 명세는 다음 문서를 참고하십시오.
-
-*   [docs/spec_01.md](docs/spec_01.md): 초기 API 서버 (MVP) 설계 명세
-*   [docs/spec_02.md](docs/spec_02.md): Yew Frontend, Docker 배포, MongoDB 연동 설계 명세
+프로젝트의 자세한 설계 및 구현 명세는 [docs/README.md](../../docs/README.md) 파일을 참고하십시오.

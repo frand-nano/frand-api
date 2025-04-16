@@ -63,4 +63,4 @@ trunk serve --open
 
 ## 상세 정보
 
-Yew Frontend 및 전체 시스템의 자세한 설계 및 구현 명세는 프로젝트 루트의 [docs/spec_02.md](../../docs/spec_02.md) 파일을 참고하십시오.
+프로젝트의 자세한 설계 및 구현 명세는 [docs/README.md](../../docs/README.md) 파일을 참고하십시오.
