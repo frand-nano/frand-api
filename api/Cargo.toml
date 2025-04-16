@@ -14,5 +14,3 @@ serde_json = { workspace = true }
 dotenvy = { workspace = true }
 log = { workspace = true }
 simple_logger = { workspace = true }
-
-# mongodb = { workspace = true, optional = true } # 향후 DB 기능 추가 시 활성화

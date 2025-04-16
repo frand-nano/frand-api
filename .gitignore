@@ -1,4 +1,6 @@
-/target
+target
 Cargo.lock
-.env
-.env.test
+*.env
+*.env.test
+secure
+*.pem

@@ -1,0 +1,19 @@
+[build]
+target = "index.html"
+dist = "dist"
+public_url = "/"
+
+[env]
+FRONTEND_API_ENDPOINT = {}
+
+[watch]
+ignore = ["../target", "../deploy"]
+
+[serve]
+address = "127.0.0.1"
+port = 8080
+open = true
+
+[[proxy]]
+rewrite = "/api/"
+backend = "http://localhost:8080/api/"

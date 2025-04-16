@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .. # 워크스페이스 루트 기준
+      dockerfile: deploy/api.Dockerfile
+    image: frand-api:latest # 이미지 이름 지정
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      # Docker 내부 네트워크에서 mongo 서비스 이름으로 접근하도록 호스트 오버라이드
+      DATABASE_HOST: mongo
+    ports:
+      - "8080:8080" # API 서비스 포트 노출 (내부 디버깅용)
+    networks:
+      - frand-api-network
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - mongo # API 시작 전 MongoDB 준비 완료 대기
+
+  yew_frontend: # 서비스 이름 변경 (frontend -> yew_frontend)
+    build:
+      context: .. # 워크스페이스 루트 기준
+      dockerfile: deploy/yew.Dockerfile # Dockerfile 경로 변경
+      args:
+        - FRONTEND_API_ENDPOINT=${FRONTEND_API_ENDPOINT}
+    image: frand-api-yew-nginx:latest # 이미지 이름 변경
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "${NGINX_EXTERNAL_PORT}:443"
+      - "${NGINX_EXTERNAL_HTTP_PORT}:80"
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/conf.d/default.conf.template:ro
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.sh
+      - ./secure/tls:/etc/nginx/certs:ro # TLS 인증서 마운트 (경로 수정)
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - api
+    networks:
+      - frand-api-network
+    command: ["/bin/sh", "/docker-entrypoint.sh"]
+    
+  mongo:
+    image: mongo:6.0 # 특정 버전 사용 권장
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASS}
+    volumes:
+      - mongo-data:/data/db # 명명된 볼륨 사용
+    # ports: # 외부 직접 접근 불필요 시 주석 처리
+    #   - "27017:27017"
+    networks:
+      - frand-api-network
+
+networks:
+  frand-api-network:
+    driver: bridge
+
+volumes:
+  mongo-data: # MongoDB 데이터 영속화를 위한 볼륨

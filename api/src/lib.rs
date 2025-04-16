@@ -15,9 +15,6 @@ pub fn build_rocket(config: Config) -> Rocket<Build> {
         .merge(("port", config.rocket_port));
 
     rocket::custom(figment)
-        .mount("/", rocket::routes![
-            handlers::root::root_handler,
-        ])
         .mount("/api/v1", rocket::routes![
             handlers::health::health_check_handler,
         ])

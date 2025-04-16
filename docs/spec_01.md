@@ -12,7 +12,7 @@
   * Rocket managed state를 활용하여 핸들러에서 설정값 접근 (향후 필요시 구현)
   * 주요 환경 변수:
     * `ROCKET_ADDRESS`: 서버 바인딩 주소 (기본값: `0.0.0.0`)
-    * `ROCKET_PORT`: 서버 리스닝 포트 (기본값: `8000`)
+    * `ROCKET_PORT`: 서버 리스닝 포트 (기본값: `8080`)
     * `LOG_LEVEL`: 로깅 레벨 (기본값: `info`, 값: `trace`, `debug`, `info`, `warn`, `error`)
     * `DATABASE_USER`: MongoDB 사용자 이름 (기본값: 없음) - 향후 사용
     * `DATABASE_PASS`: MongoDB 비밀번호 (기본값: 없음) - 향후 사용
@@ -184,7 +184,7 @@ frand-api/
     ```dotenv
     # filepath: /.env
     ROCKET_ADDRESS=0.0.0.0
-    ROCKET_PORT=8000 # spec_02.md 에서 API_INTERNAL_PORT 로 변경됨
+    ROCKET_PORT=8080
     LOG_LEVEL=info
     # DATABASE_USER= # spec_02.md 에서 필수 설정으로 변경됨
     # DATABASE_PASS= # spec_02.md 에서 필수 설정으로 변경됨
@@ -195,7 +195,7 @@ frand-api/
     ```dotenv
     # filepath: /.env.test
     # 테스트 시 포트 충돌 방지 등 필요시 다른 값 설정
-    ROCKET_PORT=8001 # spec_02.md 에서 API_INTERNAL_PORT 로 변경됨
+    ROCKET_PORT=8001
     LOG_LEVEL=debug
     ```
 
