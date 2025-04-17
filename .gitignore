@@ -1,3 +1,9 @@
 target
 Cargo.lock
 .env
+*.pem
+.env.test
+
+# Added by cargo
+
+/target
