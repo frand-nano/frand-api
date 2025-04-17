@@ -9,10 +9,12 @@ publish = false
 [dependencies]
 yew = { workspace = true, features = ["csr"] }
 yew-router = { workspace = true }
-wasm-bindgen = { workspace = true }
-web-sys = { workspace = true }
-gloo = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
-wasm-bindgen-futures = { workspace = true }
+wasm-bindgen = "0.2.89"
+web-sys = { version = "0.3.66", features = ["HtmlElement"] }
+gloo = "0.10"
+wasm-bindgen-futures = "0.4.41"
+chrono = { version = "0.4", features = ["serde"] }
+validator = { version = "0.18", features = ["derive"] }

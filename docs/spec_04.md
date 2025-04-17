@@ -87,18 +87,18 @@ yew/
 
 | 구조체 이름      | 필드명      | 타입                 | 설명                                                                     | 비고 (Serde, Validate 등)           |
 | :--------------- | :---------- | :------------------- | :----------------------------------------------------------------------- | :---------------------------------- |
-| `MemoFrontend`   | `id`        | `Option<String>`     | 메모 ID (ObjectId 문자열)                                                | `#[serde(rename = "_id")]`          |
-|                  | `title`     | `String`             | 메모 제목                                                                |                                     |
-|                  | `content`   | `String`             | 메모 내용                                                                |                                     |
-|                  | `updated_at`| `Option<DateTime<Utc>>` | 최종 수정일 (`chrono` 타입으로 파싱)                                 | `#[serde(with = "ts_milliseconds_option")]` (API 응답 형식에 따라 조정) |
-|                  | `created_at`| `Option<DateTime<Utc>>` | 생성일 (`chrono` 타입으로 파싱)                                        | `#[serde(with = "ts_milliseconds_option")]` (API 응답 형식에 따라 조정) |
-| `MemoData`       | `title`     | `String`             | 메모 제목 (폼 입력/API 요청용)                                           | `Default`, `Validate` derive        |
+| `MemoFrontend`   | `id`        | `Option<String>`     | 메모 ID (ObjectId 문자열)                                                | `#[serde(rename = "_id")]`, `PartialEq` |
+|                  | `title`     | `String`             | 메모 제목                                                                | `PartialEq`                         |
+|                  | `content`   | `String`             | 메모 내용                                                                | `PartialEq`                         |
+|                  | `updated_at`| `Option<DateTime<Utc>>` | 최종 수정일 (`chrono` 타입으로 파싱)                                 | `#[serde(with = "chrono::serde::ts_milliseconds_option")]`, `PartialEq` |
+|                  | `created_at`| `Option<DateTime<Utc>>` | 생성일 (`chrono` 타입으로 파싱)                                        | `#[serde(with = "chrono::serde::ts_milliseconds_option")]`, `PartialEq` |
+| `MemoData`       | `title`     | `String`             | 메모 제목 (폼 입력/API 요청용)                                           | `Default`, `Validate`, `PartialEq` derive |
 |                  |             |                      |                                                                          | `#[validate(length(min=1, max=140))]` |
-|                  | `content`   | `String`             | 메모 내용 (폼 입력/API 요청용)                                           | `Default`, `Validate` derive        |
+|                  | `content`   | `String`             | 메모 내용 (폼 입력/API 요청용)                                           | `Default`, `Validate`, `PartialEq` derive |
 |                  |             |                      |                                                                          | `#[validate(length(max=1400))]`      |
 
 * API 응답의 `_id` 필드(`ObjectId`)는 `Option<String>` 타입으로 처리합니다.
-* 날짜/시간 필드는 API 응답 형식(예: 밀리초 타임스탬프)에 맞춰 `serde` helper (`ts_milliseconds_option` 등)를 사용하여 `chrono::DateTime<Utc>` 타입으로 직접 파싱합니다.
+* 날짜/시간 필드는 API 응답 형식(예: 밀리초 타임스탬프)에 맞춰 `serde` helper (`chrono::serde::ts_milliseconds_option` 등)를 사용하여 `chrono::DateTime<Utc>` 타입으로 직접 파싱합니다.
 * `MemoData` 구조체는 `validator` 크레이트를 사용하여 유효성 검사 규칙을 정의합니다.
 
 ## 4. 핵심 컴포넌트 및 커스텀 훅
@@ -119,7 +119,7 @@ yew/
 | :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 역할        | 메모 목록 조회 및 표시 페이지                                                                                                                                     |
 | 상태        | `use_memo_api` 훅에서 반환된 상태 핸들 사용 (`memos`, `loading`, `error`)                                                                                           |
-| 주요 로직   | - `use_memo_api` 훅 호출.<br>- 컴포넌트 마운트 시 `use_memo_api`의 `fetch_list` 콜백 호출.<br>- 로딩 상태 관리 및 스피너 표시 (`loading` 핸들 사용).<br>- 오류 발생 시 텍스트 메시지 표시 (`error` 핸들 사용).<br>- 조회된 메모 목록(`memos` 핸들)을 `MemoListItem` 컴포넌트를 사용하여 렌더링.<br>- `MemoListItem`으로부터 삭제 요청 시 `use_memo_api`의 `delete` 콜백 호출. |
+| 주요 로직   | - `use_memo_api` 훅 호출.<br>- 컴포넌트 마운트 시 `use_effect_with`를 사용하여 `use_memo_api`의 `fetch_list` 콜백 호출.<br>- 로딩 상태 관리 및 스피너 표시 (`loading` 핸들 사용).<br>- 오류 발생 시 텍스트 메시지 표시 (`error` 핸들 사용).<br>- 조회된 메모 목록(`memos` 핸들)을 `MemoListItem` 컴포넌트를 사용하여 렌더링.<br>- `MemoListItem`으로부터 삭제 요청 시 `use_memo_api`의 `delete` 콜백 호출. |
 | Props       | 없음                                                                                                                                                              |
 | 렌더링 요소 | 페이지 제목, 새 메모 작성 버튼 (`Link<Route::MemoCreate>`), 로딩 스피너, 오류 메시지 영역, 메모 카드 목록                                                              |
 
@@ -139,7 +139,7 @@ yew/
 | :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 역할        | 메모 생성 또는 수정 페이지                                                                                                                                                                                                                                              |
 | 상태        | `use_memo_api` 훅에서 반환된 상태 핸들 사용 (`memo`, `loading`, `error`).                                                                                                                                                                                                 |
-| 주요 로직   | - `use_memo_api` 훅 호출.<br>- 수정 모드(`memo_id`가 `Some`)일 경우, 컴포넌트 마운트 시 `use_memo_api`의 `fetch_one` 콜백 호출하여 초기 데이터 로드.<br>- 로딩 상태 관리 및 스피너 표시 (`loading` 핸들 사용).<br>- 오류 발생 시 텍스트 메시지 표시 (`error` 핸들 사용).<br>- `MemoForm` 컴포넌트에 초기 데이터(`memo` 핸들 값 기반으로 `MemoData` 생성) 및 `on_submit` 콜백 전달.<br>- `on_submit` 콜백: `MemoForm`에서 제출된 데이터로 `use_memo_api`의 `create` 또는 `update` 콜백 호출, 성공 시 성공 메시지 표시 후 목록 페이지로 이동, 실패 시 오류 메시지 표시. |
+| 주요 로직   | - `use_memo_api` 훅 호출.<br>- 수정 모드(`memo_id`가 `Some`)일 경우, 컴포넌트 마운트 시 `use_effect_with`를 사용하여 `use_memo_api`의 `fetch_one` 콜백 호출하여 초기 데이터 로드.<br>- 로딩 상태 관리 및 스피너 표시 (`loading` 핸들 사용).<br>- 오류 발생 시 텍스트 메시지 표시 (`error` 핸들 사용).<br>- `MemoForm` 컴포넌트에 초기 데이터(`memo` 핸들 값 기반으로 `MemoData` 생성) 및 `on_submit` 콜백 전달.<br>- `on_submit` 콜백: `MemoForm`에서 제출된 데이터로 `use_memo_api`의 `create` 또는 `update` 콜백 호출, 성공 시 성공 메시지 표시 후 목록 페이지로 이동, 실패 시 오류 메시지 표시. |
 | Props       | `memo_id: Option<String>`                                                                                                                                                                                                                                               |
 | 렌더링 요소 | 페이지 제목 (생성/수정 구분), 로딩 스피너, 오류/성공 메시지 영역, `MemoForm` 컴포넌트, 목록으로 돌아가기 버튼/링크                                                                                                                                                            |
 
@@ -187,7 +187,7 @@ yew/
 ## 8. 구현 시 주의사항
 
 * **의존성 추가:** `yew/Cargo.toml`에 `chrono` (features: `["serde"]`), `validator` (features: `["derive"]`) 의존성을 추가해야 합니다.
-* **API 응답 파싱:** API 응답의 날짜 형식이 `ts_milliseconds_option`과 호환되는지 확인하고, 필요시 `serde` 설정을 조정합니다.
+* **API 응답 파싱:** API 응답의 날짜 형식이 `chrono::serde::ts_milliseconds_option`과 호환되는지 확인하고, 필요시 `serde` 설정을 조정합니다.
 * **오류 처리 상세화:** `validator::ValidationErrors`를 파싱하여 필드별 오류 메시지를 표시하는 로직 구현. 네트워크 오류, 서버 오류 등 다양한 오류 상황에 대한 사용자 피드백 구체화.
 * **날짜 형식화:** `chrono`를 사용하여 `DateTime<Utc>`를 사용자 친화적인 문자열로 변환하는 로직 구현 (예: `strftime`).
 * **사용자 경험:** 로딩 스피너의 위치 및 표시 방식, 성공/오류 메시지의 명확성, 삭제 확인 절차 등을 고려합니다.

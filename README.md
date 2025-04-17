@@ -9,7 +9,7 @@ Rust 기반 REST API 서버와 Yew 기반 웹 애플리케이션입니다.
 *   `api/`: 핵심 REST API 서버 구현체 (Rocket 프레임워크 사용).
 *   `yew/`: Yew 프레임워크 기반 웹 애플리케이션 구현체.
 *   `deploy/`: Docker 기반 배포 관련 파일 (Dockerfiles, docker-compose.yml, Nginx 설정, 인증서 생성 스크립트 등).
-*   `docs/`: 프로젝트 관련 문서 ([spec_01.md](./docs/spec_01.md), [spec_02.md](./docs/spec_02.md), [spec_03.md](./docs/spec_03.md) 등).
+*   `docs/`: 프로젝트 관련 문서.
 *   `.env.example`: 필요한 환경 변수 예시 파일 (`DATABASE_NAME` 포함).
 *   `.dockerignore`: Docker 빌드 시 제외할 파일 목록.
 
@@ -45,6 +45,18 @@ cargo test
 # cargo test
 ```
 API 테스트 실행 전 프로젝트 루트에 `.env.test` 파일을 필요에 따라 설정하십시오. (`DATABASE_NAME` 포함)
+
+## 주의
+docs/guide 문서를 이용하여 AI 로 생성된 연습용 프로토타입 프로젝트입니다.
+대부분의 코드가 검증되지 않았으며, 아래와 같은 여러 가지 보안 요소가 아직 미구현 상태입니다.
+
+*   사용자 인증 시스템
+*   역할 기반 접근 제어
+*   API 요청 속도 제한
+*   데이터 유효성 검사
+*   MongoDB 보안 설정 (접근 제한, TLS 설정)
+*   API 보안 헤더 추가
+*   HTTP에서 HTTPS로 강제 리디렉션 설정
 
 ## 상세 정보
 
