@@ -1,4 +1,5 @@
 pub mod config;
+pub mod db;
 pub mod error;
 pub mod handlers;
 pub mod logger;
@@ -17,6 +18,13 @@ pub fn build_rocket(config: Config) -> Rocket<Build> {
     rocket::custom(figment)
         .mount("/api/v1", rocket::routes![
             handlers::health::health_check_handler,
+        ])
+        .mount("/api/v1/memos", rocket::routes![
+            handlers::memo::create_memo_handler,
+            handlers::memo::list_memos_handler,
+            handlers::memo::get_memo_handler,
+            handlers::memo::update_memo_handler,
+            handlers::memo::delete_memo_handler,
         ])
         .register("/", rocket::catchers![
             error::not_found,

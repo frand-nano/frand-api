@@ -10,6 +10,7 @@ pub struct Config {
     pub database_pass: String,
     pub database_host: String,
     pub database_port: u16,
+    pub database_name: String, // 추가: 데이터베이스 이름
 }
 
 impl Config {
@@ -33,6 +34,10 @@ impl Config {
             .unwrap_or_else(|_| "27017".to_string())
             .parse::<u16>()
             .expect("DATABASE_PORT 환경 변수는 유효한 숫자여야 합니다");
+        
+        // 데이터베이스 이름 설정 (추가)
+        let database_name = env::var("DATABASE_NAME")
+            .unwrap_or_else(|_| "frand_api_db".to_string());
 
         Self {
             rocket_address,
@@ -42,6 +47,7 @@ impl Config {
             database_pass,
             database_host,
             database_port,
+            database_name,
         }
     }
 

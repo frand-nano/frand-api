@@ -55,8 +55,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASS}
     volumes:
       - mongo-data:/data/db # 명명된 볼륨 사용
-    # ports: # 외부 직접 접근 불필요 시 주석 처리
-    #   - "27017:27017"
+    ports: # 외부 직접 접근 불필요 시 주석 처리
+      - "27017:27017"
     networks:
       - frand-api-network
 

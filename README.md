@@ -9,13 +9,13 @@ Rust 기반 REST API 서버와 Yew 기반 웹 애플리케이션입니다.
 *   `api/`: 핵심 REST API 서버 구현체 (Rocket 프레임워크 사용).
 *   `yew/`: Yew 프레임워크 기반 웹 애플리케이션 구현체.
 *   `deploy/`: Docker 기반 배포 관련 파일 (Dockerfiles, docker-compose.yml, Nginx 설정, 인증서 생성 스크립트 등).
-*   `docs/`: 프로젝트 관련 문서.
-*   `.env.example`: 필요한 환경 변수 예시 파일.
+*   `docs/`: 프로젝트 관련 문서 ([spec_01.md](./docs/spec_01.md), [spec_02.md](./docs/spec_02.md), [spec_03.md](./docs/spec_03.md) 등).
+*   `.env.example`: 필요한 환경 변수 예시 파일 (`DATABASE_NAME` 포함).
 *   `.dockerignore`: Docker 빌드 시 제외할 파일 목록.
 
 ## 실행 방법 (Docker Compose 사용)
 
-1.  **`.env` 파일 설정:** `deploy` 디렉토리에 `.env.example` 파일을 복사하여 `.env` 파일을 생성하고 필요한 환경 변수(데이터베이스 사용자/비밀번호, 포트 등)를 설정합니다.
+1.  **`.env` 파일 설정:** `deploy` 디렉토리에 `.env.example` 파일을 복사하여 `.env` 파일을 생성하고 필요한 환경 변수(데이터베이스 사용자/비밀번호, 포트, 데이터베이스 이름 등)를 설정합니다.
     ```bash
     cd deploy
     cp .env.example .env
@@ -31,7 +31,7 @@ Rust 기반 REST API 서버와 Yew 기반 웹 애플리케이션입니다.
     # deploy 디렉토리에서 실행
     docker-compose up -d --build
     ```
-    이제 `https://localhost` (또는 설정된 도메인)으로 접속하여 웹 애플리케이션을, `/api/v1/health` 등으로 API를 확인할 수 있습니다.
+    이제 `https://localhost` (또는 설정된 도메인)으로 접속하여 웹 애플리케이션을, `/api/v1/health` 또는 `/api/v1/memos` 등으로 API를 확인할 수 있습니다.
 
 ## 테스트 실행
 
@@ -44,8 +44,8 @@ cargo test
 # cd yew
 # cargo test
 ```
-API 테스트 실행 전 프로젝트 루트에 `.env.test` 파일을 필요에 따라 설정하십시오.
+API 테스트 실행 전 프로젝트 루트에 `.env.test` 파일을 필요에 따라 설정하십시오. (`DATABASE_NAME` 포함)
 
 ## 상세 정보
 
-프로젝트의 자세한 설계 및 구현 명세는 [docs/README.md](../../docs/README.md) 파일을 참고하십시오.
+프로젝트의 자세한 설계 및 구현 명세는 [`docs/`](./docs/) 디렉토리의 명세 문서들을 참고하십시오.

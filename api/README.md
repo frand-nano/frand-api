@@ -10,7 +10,10 @@
 *   Serde (JSON 처리)
 *   dotenvy (환경 변수 관리)
 *   log / simple_logger (로깅)
-*   MongoDB Rust Driver (`mongodb`)
+*   MongoDB Rust Driver (`mongodb 2.8.2`)
+*   Chrono (날짜/시간 처리)
+*   Validator (입력값 유효성 검사)
+*   Futures (비동기 스트림 처리)
 
 ## 설정
 
@@ -25,8 +28,9 @@ API 서버 설정은 프로젝트 루트의 `.env` 파일을 통해 관리됩니
 *   `DATABASE_PASS`: MongoDB 비밀번호
 *   `DATABASE_HOST`: MongoDB 호스트 (Docker Compose 사용 시 `mongo` 서비스 이름으로 자동 설정됨)
 *   `DATABASE_PORT`: MongoDB 포트 (기본값: `27017`)
+*   `DATABASE_NAME`: 사용할 MongoDB 데이터베이스 이름 (기본값: `frand_api_db`, 테스트 시 `frand_api_db_test`)
 
-루트 디렉토리에 `.env` 파일을 생성하고 필요한 값을 설정하십시오. 예시는 프로젝트 루트의 `.env.example` 파일 또는 `docs/spec_02.md` 문서를 참고하세요.
+루트 디렉토리에 `.env` 파일을 생성하고 필요한 값을 설정하십시오. 예시는 프로젝트 루트의 `.env.example` 파일 또는 `docs/spec_03.md` 문서를 참고하세요.
 
 ## 빌드
 
@@ -62,8 +66,8 @@ docker-compose up -d # 전체 서비스 실행
 cargo test
 ```
 
-테스트는 `.env.test` 파일의 설정을 사용합니다. 테스트 실행 전 루트 디렉토리에 `.env.test` 파일을 생성하고 필요에 따라 설정하십시오.
+테스트는 `.env.test` 파일의 설정을 사용합니다 (`DATABASE_NAME` 포함). 테스트 실행 전 루트 디렉토리에 `.env.test` 파일을 생성하고 필요에 따라 설정하십시오. `tests/health.rs` 와 `tests/memo.rs` 파일에서 테스트 케이스를 확인할 수 있습니다.
 
 ## 상세 정보
 
-프로젝트의 자세한 설계 및 구현 명세는 [docs/README.md](../../docs/README.md) 파일을 참고하십시오.
+프로젝트의 자세한 설계 및 구현 명세는 프로젝트 루트의 [`docs/`](../../docs/) 디렉토리의 명세 문서들을 참고하십시오.
