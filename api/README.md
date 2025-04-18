@@ -34,19 +34,24 @@ URL 경로에 버전을 포함하는 방식을 사용합니다. API 기본 경�
 
 애플리케이션 설정은 프로젝트 루트의 `.env` 파일을 통해 관리됩니다. `dotenvy` 크레이트를 사용하여 이 파일을 로드합니다.
 
-*   `.env` 파일 예시:
+*   `.env` 파일 예시 (`deploy/.env.example` 참고):
     ```dotenv
     # API Service
     LOG_LEVEL=info
     ROCKET_ADDRESS=0.0.0.0
     ROCKET_PORT=8080
     ROCKET_API_ENDPOINT=/api/v1
+
+    # NGINX Service (deploy/.env 에서 사용)
+    NGINX_HTTP_PORT=80
+    NGINX_HTTPS_PORT=443
     ```
 *   **주요 환경 변수:**
     *   `LOG_LEVEL`: 애플리케이션 로그 레벨 (예: "info", "debug")
     *   `ROCKET_ADDRESS`: 서버가 바인딩할 주소
     *   `ROCKET_PORT`: 서버가 리스닝할 포트
     *   `ROCKET_API_ENDPOINT`: API 기본 경로
+    *   `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`: Nginx 서비스에서 사용할 포트 (Docker Compose에서 사용)
 
 **주의:** 테스트 실행 시에는 프로젝트 루트의 `.env` 파일을 사용합니다. 테스트 환경을 위한 별도의 설정이 필요하다면 테스트 코드 내에서 환경 변수를 설정하거나 별도의 테스트용 `.env` 파일을 로드하도록 수정해야 합니다. (`api/tests/test_util.rs` 참고)
 
@@ -65,10 +70,11 @@ URL 경로에 버전을 포함하는 방식을 사용합니다. API 기본 경�
 
 ### Docker 사용
 
-프로젝트 루트의 `deploy` 디렉토리에 있는 Docker 관련 파일을 사용합니다. 자세한 내용은 [`../deploy/README.md`](../deploy/README.md) 파일을 참고하세요.
+프로젝트 루트의 `deploy` 디렉토리에 있는 Docker 관련 파일을 사용합니다. 이 방식은 API 서버와 Nginx 리버스 프록시를 함께 실행합니다. 자세한 내용은 [`../deploy/README.md`](../deploy/README.md) 파일을 참고하세요.
 
 1.  `deploy/.env` 파일을 설정합니다.
-2.  `deploy` 디렉토리에서 다음 명령어를 실행합니다.
+2.  (최초 실행 시) `deploy/certs` 디렉토리에서 `./gen_certs.sh` 스크립트를 실행하여 로컬 테스트용 TLS 인증서를 생성합니다.
+3.  `deploy` 디렉토리에서 다음 명령어를 실행합니다.
     ```bash
     docker-compose up -d --build
     ```

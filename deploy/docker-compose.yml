@@ -14,6 +14,28 @@ services:
     networks:
       - frand-api-network
 
+  nginx:
+    build:
+      context: ..
+      dockerfile: deploy/nginx.dockerfile
+    image: frand-nginx:latest
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
+      - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/conf.d/nginx.conf.template:ro
+      - ./nginx/template_replace.sh:/etc/nginx/template_replace.sh
+      - ./certs:/etc/nginx/certs:ro
+      - ./static:/usr/share/nginx/static:ro
+    command: ["/bin/sh", "/etc/nginx/template_replace.sh"]
+    depends_on:
+      - api
+    networks:
+      - frand-api-network
+
 networks:
   frand-api-network:
     driver: bridge
