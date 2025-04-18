@@ -1,12 +1,13 @@
 use rocket::http::Status;
-use test_util::new_test_rocket_client;
+use test_util::{new_test_env_config, new_test_rocket_client};
 
 mod test_util;
 
 #[test]
 fn test_health() -> anyhow::Result<()> {
+    let config = new_test_env_config()?;
     let client = new_test_rocket_client()?;
-    let response = client.get("/api/v1/health").dispatch();
+    let response = client.get(format!("{}/health", config.rocket_api_endpoint)).dispatch();
     
     assert_eq!(response.status(), Status::Ok);
     

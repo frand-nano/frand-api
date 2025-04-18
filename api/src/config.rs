@@ -1,30 +1,34 @@
 use anyhow::Result;
 use serde::Deserialize;
-use std::{env::current_dir, path::Path};
-use config::{Config, File};
+use std::path::Path;
+use std::env::{self, current_dir};
+use anyhow::Context; 
 
 #[derive(Debug, Deserialize)]
-pub struct ApiConfig {
+pub struct ApiEnvConfig {
+    // 로그 설정
     log_level: String,
-    pub server: ApiServerConfig,
+    
+    // 로켓 웹서버 설정
+    pub rocket_address: String,
+    pub rocket_port: String,
+    pub rocket_api_endpoint: String,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct ApiServerConfig {
-    pub port: u16,
-    pub host: String,
-    pub api_version: String,
-}
-
-impl ApiConfig {
+impl ApiEnvConfig {
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = current_dir()?.join(path);
         
-        let config = Config::builder()
-            .add_source(File::from(path))
-            .build()?;
+        // 환경 변수 파일 로드 시도
+        dotenvy::from_path(path.as_path())
+            .with_context(|| format!("환경 변수 파일을 로드하지 못했습니다: {}", path.display()))?;
         
-        Ok(config.try_deserialize()?)
+        Ok(Self {
+            log_level: env::var("LOG_LEVEL")?,
+            rocket_address: env::var("ROCKET_ADDRESS")?,
+            rocket_port: env::var("ROCKET_PORT")?,
+            rocket_api_endpoint: env::var("ROCKET_API_ENDPOINT")?,
+        })
     }
 
     pub fn log_level(&self) -> log::Level {

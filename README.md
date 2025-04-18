@@ -6,6 +6,7 @@
 
 *   `api/`: Rocket 기반의 API 서버 소스 코드 및 관련 파일이 위치합니다. 자세한 내용은 [`./api/README.md`](./api/README.md) 파일을 참고하세요.
 *   `docs/`: 프로젝트 관련 문서 (기술 명세 등)가 위치합니다.
+*   `deploy/`: Docker를 사용한 배포 관련 파일 (Dockerfile, docker-compose.yml 등)이 위치합니다. 자세한 내용은 [`./deploy/README.md`](./deploy/README.md) 파일을 참고하세요.
 
 ## 라이선스
 
