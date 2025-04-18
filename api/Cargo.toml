@@ -10,7 +10,7 @@ description = "frand API 서비스 핵심 구현"
 anyhow = "1.0"
 config = "0.15"
 log = "0.4"
-rocket = "0.5"
+rocket = { version = "0.5", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 simple_logger = "5.0"
