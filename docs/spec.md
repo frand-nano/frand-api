@@ -1,144 +1,128 @@
-# 기술 명세
-## 프로젝트 정보
-  * 라이선스: MIT
-  * 초기 버전: 0.1.1
-  * 개발자: frand-nano <frand.nano@gmail.com>
+# Frand API 기술 명세서
 
-## 프로젝트 구조
-  * 전체 프로젝트 루트 구조:
-    ```
-    /
-    ├── api/          # Rust Rocket 백엔드
-    │   ├── Cargo.toml
-    │   └── src/      # API 소스 코드
-    │       ├── main.rs
-    │       ├── lib.rs
-    │       ├── config.rs # 설정 관리
-    │       ├── error.rs  # 오류 정의
-    │       └── routes/
-    │           └── health.rs # 라우트 핸들러
-    ├── yew/          # Rust Yew 프론트엔드
-    │   ├── Cargo.toml
-    │   ├── index.html
-    │   └── src/
-    │       └── main.rs
-    ├── common/       # API와 Yew 간 공통 코드
-    │   ├── Cargo.toml
-    │   └── src/
-    │       └── lib.rs
-    ├── docs/         # 프로젝트 문서화
-    │   ├── spec.md   # 기술 명세
-    │   └── guide.md  # 구현 가이드
-    ├── config/       # API 서버 설정 파일 (default.toml, test.toml 등)
-    ├── deploy/       # 배포 관련 파일 (docker-compose.yml, nginx 설정, 인증서 등)
-    │   ├── .env.example # 환경 변수 예시 파일
-    │   ├── api.dockerfile
-    │   ├── nginx.dockerfile # Nginx Dockerfile
-    │   ├── docker-compose.yml
-    │   ├── config/   # API 설정 파일 (빌드 시 api.Dockerfile에서 사용)
-    │   │   └── default.toml
-    │   ├── nginx/    # Nginx 관련 설정 및 스크립트
-    │   │   ├── nginx.conf.template # Nginx 설정 템플릿
-    │   │   └── template_replace.sh # Nginx 설정 적용 및 실행 스크립트
-    │   ├── certs/    # TLS 인증서 파일 위치 (cert.pem, privkey.pem) 및 생성 스크립트
-    │   │   └── gen_certs.sh # TLS 인증서 생성 스크립트
-    │   └── static/   # Nginx에서 서빙할 정적 파일 위치 (볼륨 마운트 대상)
-    ├── Cargo.toml    # 워크스페이스 설정
-    ├── Trunk.toml    # Yew 빌드 도구 설정
-    ├── .gitignore
-    └── .dockerignore # Docker 빌드 시 제외할 파일 목록
-    ```
-  * `api/src` 내부에 `config`, `routes`, `error`, `handlers`, `models`, `services` 등의 모듈 구조 사용
-  * `deploy/` 폴더 내에는 빌드된 이미지와 배포 관련 파일(docker-compose.yml, nginx 설정 등)을 위치시켜 해당 폴더만으로 배포 가능하도록 구성.
-  * `yew/` 폴더는 Yew 프론트엔드 관련 파일을 위치시키고, Trunk 빌드 도구를 사용하여 WASM 앱을 빌드.
-  * `common/` 폴더는 API 백엔드와 Yew 프론트엔드 간에 공유되는 코드 (예: 데이터 모델)를 위치시킴.
+## 1. 개요
 
-## 의존성
-  * **Backend (API)**
-    * 프로그래밍 언어: Rust
-    * 웹 프레임워크: Rocket (JSON 기능 활성화)
-    * 로깅: `log`, `simple_logger` 크레이트 사용 (터미널 출력)
-    * 오류 처리: `anyhow`, `thiserror` 사용.
-      - (추천 방식) `thiserror`로 사용자 정의 오류 타입을 정의하고, Rocket의 `Responder`를 구현하여 오류를 적절한 HTTP 응답으로 변환하는 방식 고려.
-    * 공통 코드: `frand-api-common` 크레이트 (워크스페이스 내)
-    * 설정 관리:
-        - API 서버 내부 설정: `config` 크레이트 사용 (프로젝트 루트 `config/default.toml`, `config/test.toml` 파일 활용)
-        - 배포 관련 설정: `deploy/.env` 파일 사용 (Docker Compose 및 Nginx entrypoint에서 사용)
-        - 주요 설정 항목 (TOML 기준): `log_level`, `server.port`, `server.host`, `server.api_version`
-        - 주요 설정 항목 (.env 기준): `LOG_LEVEL`, `ROCKET_ADDRESS`, `ROCKET_PORT`, `ROCKET_API_ENDPOINT`, `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT` 등 배포 환경에 필요한 값
-    * 시간 처리: `chrono` 크레이트 사용 (필요시 `serde` 기능 활성화)
-  * **Frontend (Yew)** (향후 추가 예정)
-    * 프로그래밍 언어: Rust (WASM)
-    * 웹 프레임워크: Yew v0.21
-    * 상태 관리: Yew의 Hooks API 사용 (`use_state`, `use_effect_with` 등)
-    * UI 라이브러리: Bootstrap 5 (CDN)
-    * HTTP 클라이언트: `gloo-net` 크레이트 사용 (향후 추가 예정)
-    * 로깅: `wasm-logger` 및 `gloo-console` 크레이트 사용 (브라우저 콘솔 출력)
-    * 빌드 도구: Trunk
-    * 공통 코드: `frand-api-common` 크레이트 (워크스페이스 내)
-  * **Deployment & Infrastructure**
-    * 컨테이너 오케스트레이션: Docker Compose (`deploy/docker-compose.yml` 사용)
-      * 관리 대상 서비스: `api`, `nginx`
-      * 환경 변수 주입: `deploy/.env` 파일을 참조하여 각 서비스에 환경 변수 전달 (`env_file` 속성 사용)
-      * 네트워크: `frand-api-network` (bridge 드라이버)
-      * 볼륨:
-          - `deploy/nginx/nginx.conf.template` -> `/etc/nginx/conf.d/nginx.conf.template` (읽기 전용, `nginx` 서비스)
-          - `deploy/nginx/template_replace.sh` -> `/etc/nginx/template_replace.sh` (`nginx` 서비스)
-          - `deploy/certs` -> `/etc/nginx/certs` (읽기 전용, TLS 인증서, `nginx` 서비스)
-          - `deploy/static` -> `/usr/share/nginx/static` (읽기 전용, Nginx 정적 파일 서빙용, `nginx` 서비스)
-          - (빌드 시) Yew 빌드 결과물 (`yew/dist`) -> `/usr/share/nginx/yew/dist` (`nginx` 서비스)
-      * 서비스 커맨드:
-          - `nginx`: `/bin/sh /etc/nginx/template_replace.sh` 실행 (Nginx 설정 적용 및 실행)
-    * 웹 서버 / 리버스 프록시: Nginx (`nginx` 서비스 내에서 실행)
-      * 역할: API 서버(`api` 서비스)로의 리버스 프록시 (`${ROCKET_API_ENDPOINT}/`), Yew 프론트엔드 서빙 (`/`), 정적 파일 서빙 (`/static/`), HTTPS 처리
-      * HTTPS 설정: `deploy/certs/` 경로에 볼륨 마운트된 `cert.pem`, `privkey.pem` 파일 사용. HTTP 요청은 HTTPS로 리다이렉션.
-      * Nginx 설정 동적 적용: `template_replace.sh` 스크립트가 컨테이너 시작 시 `.env` 파일의 환경 변수를 참조하여 `nginx.conf.template`에 값을 적용, 최종 설정 생성.
-      * Yew 프론트엔드 서빙: `/usr/share/nginx/yew/dist` 디렉토리의 파일을 루트 경로(`/`)로 서빙. `try_files`를 사용하여 SPA 라우팅 지원.
-      * 정적 파일 서빙: `deploy/static` 폴더를 볼륨 마운트하여 `/usr/share/nginx/static/` 경로로 서빙.
-    * **Docker Base Images**
-      * Rust Build (API): `rust:1.86-slim` (Multi-stage 빌드 활용)
-      * API Runtime: `debian:bookworm-slim`
-      * Nginx Runtime: `nginx:1.27.4-alpine-slim`
-      * Database: `mongo:6.0` (향후 추가 예정)
+본 문서는 `frand-api` 프로젝트의 기술적인 설계와 구현 명세를 기술합니다. 이 프로젝트는 Rust 기반의 REST API 서버와 Yew 프레임워크 기반의 웹 프론트엔드로 구성된 풀스택 웹 애플리케이션 프로토타입입니다. Docker Compose를 사용하여 개발 및 배포 환경을 관리합니다.
 
-## 기능
-  * **Backend (API)**
-    * 초기 엔드포인트: `/api/v1/health` (Nginx를 통해 접근 시 `https://<your-domain>/api/v1/health`)
-      - GET 요청 시 JSON 형식으로 `{ "status": 200, "version": "<api_version_from_config>" }` 응답 반환. (`api_version_from_config`은 `config/default.toml`의 `server.api_version` 값)
-      - 향후 데이터베이스 연결 상태 등 추가 정보 포함 예정.
-  * **Nginx**
-    * API 서버로 요청 프록시
-    * Yew 프론트엔드 정적 파일 서빙 (루트 경로 `/`)
-    * HTTP 요청을 HTTPS로 자동 리다이렉션
-    * `/static/` 경로로 정적 파일 서빙
-  * **Frontend (Yew)** (향후 추가 예정)
-    * 초기 기능: 루트 경로(`/`)에 간단한 환영 메시지 표시. (API 호출은 향후 추가)
-    * Bootstrap 기반의 반응형 UI 제공
-    * API 오류 시 적절한 오류 메시지 표시
+## 2. 기술 스택
 
-## 테스트 전략
-  * **Backend (API)**
-    * 통합 테스트 위주로 진행
-    * Rocket의 `LocalClient`를 활용한 통합 테스트 고려 (`api/tests` 디렉토리)
-  * **Frontend (Yew)**
-    * 컴포넌트 단위 테스트 (향후)
-    * E2E 테스트 (향후, `wasm-bindgen-test` 활용)
+*   **백엔드 (API)**:
+    *   언어: Rust
+    *   웹 프레임워크: Rocket (`0.5`)
+    *   데이터베이스 드라이버: `mongodb`
+*   **프론트엔드 (Web App)**:
+    *   언어: Rust
+    *   프레임워크: Yew (`0.21`)
+    *   빌드 도구/개발 서버: Trunk
+    *   라우팅: `yew-router` (`0.18`)
+    *   Web API 연동: `wasm-bindgen`, `web-sys`, `gloo`
+    *   스타일링: CSS (`static/style.css`)
+*   **데이터베이스**:
+    *   MongoDB
+*   **배포**:
+    *   컨테이너화: Docker, Docker Compose
+    *   웹 서버/리버스 프록시: Nginx
+*   **개발 환경**:
+    *   Rust Toolchain (Cargo)
 
-## API 버전 관리
-  * URL 경로에 버전 포함 방식 사용.
-  * API 버전 경로는 설정 파일 (프로젝트 루트 `config/default.toml`)의 `server.api_version` 항목에서 관리 (예: `/api/v1/...`)
+## 3. 프로젝트 구조
 
-## 향후 추가 예정
-  * 데이터베이스: MongoDB
-    - ODM 없이 `mongodb` 드라이버와 `serde` 직접 사용 예정
-  * 인증/인가: Google OAuth, JWT
-  * 초기 데이터 모델 (예시):
-    - `User` 모델: `id` (고유 식별자), `username` (사용자 이름), `email` (이메일 주소) 등의 기본 필드 포함 (구체적인 타입은 추후 결정)
-  * CI/CD: GitHub Actions
-    - 자동 테스트, 빌드 및 DockerHub 배포 파이프라인 구성
-  * 추가 UI 기능:
-    - 사용자 인증 및 프로필 관리
-    - 데이터 CRUD 작업을 위한 인터페이스
-  * 모니터링:
-    - 서버 상태 모니터링 및 로깅
-    - 성능 지표 수집 및 시각화
+```
+.
+├── api/                  # Rust Rocket API 서버 소스 코드
+│   ├── Cargo.toml
+│   └── src/
+├── deploy/               # 배포 관련 파일 (Docker, Nginx)
+│   ├── docker-compose.yml
+│   ├── api.Dockerfile
+│   ├── yew.Dockerfile
+│   ├── nginx/
+│   │   └── nginx.conf.template
+│   ├── .env.example      # 배포 환경 변수 예시
+│   └── gen_certs.sh      # 개발용 TLS 인증서 생성 스크립트
+├── docs/                 # 프로젝트 문서
+│   └── spec.md           # 기술 명세서 (이 파일)
+├── yew/                  # Yew 프론트엔드 소스 코드
+│   ├── Cargo.toml
+│   ├── Trunk.toml        # Trunk 빌드/개발 서버 설정
+│   ├── index.html        # 기본 HTML 템플릿
+│   ├── static/           # 정적 에셋 (CSS 등)
+│   └── src/
+├── .env.example          # 프로젝트 루트 환경 변수 예시 (주로 Yew 빌드용)
+├── .dockerignore         # Docker 빌드 제외 목록
+├── Cargo.toml            # Rust 워크스페이스 설정
+└── README.md             # 프로젝트 개요 및 사용법
+```
+
+## 4. API 서버 (`api` 패키지)
+
+*   **프레임워크**: Rocket (`0.5`)
+*   **주요 기능**: RESTful API 엔드포인트 제공
+*   **데이터베이스 연동**: `mongodb` 크레이트를 사용하여 MongoDB와 상호작용합니다. 데이터베이스 연결 정보는 환경 변수를 통해 설정됩니다.
+*   **설정**: 주로 환경 변수(`.env` 또는 시스템 환경 변수)를 통해 데이터베이스 연결 정보 등을 설정합니다.
+*   **테스트**: `cargo test` 명령어를 통해 단위 및 통합 테스트를 실행합니다. 테스트 시 별도의 `.env.test` 파일을 사용할 수 있습니다. (`DATABASE_NAME` 등)
+
+## 5. 프론트엔드 (`yew` 패키지)
+
+*   **프레임워크**: Yew (`0.21`)
+*   **주요 기능**: 사용자 인터페이스 제공, API 서버와 데이터 통신
+*   **빌드 및 개발**: Trunk를 사용하여 애플리케이션을 빌드하고 개발 서버를 실행합니다.
+    *   `Trunk.toml`: 빌드 경로, 프록시 설정, 환경 변수 주입 등을 정의합니다.
+    *   개발 시 API 요청 (`/api/`)은 `Trunk.toml`의 프록시 설정을 통해 백엔드 API 서버로 전달됩니다.
+*   **라우팅**: `yew-router` (`0.18`)를 사용하여 클라이언트 사이드 라우팅을 구현합니다.
+*   **API 연동**: `gloo-net` 등을 사용하여 백엔드 API와 통신합니다. API 엔드포인트 경로는 빌드 시점에 `FRONTEND_API_ENDPOINT` 환경 변수를 통해 주입받습니다. 이 변수는 프로젝트 루트의 `.env` 파일 또는 Docker 빌드 인자를 통해 설정됩니다.
+*   **정적 파일**: CSS, 이미지 등 정적 파일은 `static/` 디렉토리에 위치하며, Trunk 빌드 시 `dist/` 디렉토리로 복사됩니다.
+*   **테스트**: 현재 프론트엔드 테스트 전략은 정의되지 않았습니다.
+
+## 6. 배포 (`deploy` 디렉토리)
+
+*   **방식**: Docker Compose를 사용하여 API 서버, 프론트엔드(Nginx 서빙), 데이터베이스 컨테이너를 함께 실행합니다.
+*   **서비스 구성**:
+    *   `api`: Rust API 서버 컨테이너 (`api.Dockerfile` 기반).
+    *   `yew_frontend`: Nginx 컨테이너. Yew 앱 빌드 결과 정적 파일을 서빙하고, API 요청을 `api` 서비스로 프록시합니다 (`yew.Dockerfile` 기반).
+    *   `mongo`: MongoDB 데이터베이스 컨테이너.
+*   **Nginx 설정 (`nginx.conf.template`)**:
+    *   HTTPS 리다이렉션 (80 -> 443).
+    *   TLS 종료 (자체 서명 또는 실제 인증서 사용).
+    *   API 요청 (`/api/v1/`)을 `api` 서비스로 프록시 패스.
+    *   Yew 정적 파일 서빙 및 SPA 라우팅 지원 (`try_files`).
+    *   정적 에셋 캐싱 (`/static/`).
+    *   환경 변수를 사용하여 동적으로 설정 파일 생성.
+*   **환경 변수**: `deploy/.env` 파일을 통해 `docker-compose.yml` 및 컨테이너 내부에서 사용할 환경 변수(예: `DATABASE_NAME`)를 설정합니다. `.env.example` 파일이 템플릿 역할을 합니다.
+*   **TLS**: `gen_certs.sh` 스크립트를 사용하여 개발 및 테스트용 자체 서명 TLS 인증서를 생성할 수 있습니다. 실제 배포 시에는 유효한 인증서가 필요합니다.
+
+## 7. 데이터베이스
+
+*   **종류**: MongoDB
+*   **데이터 모델**: (현재 코드베이스에서는 구체적인 스키마 정보가 부족합니다. 추후 정의 필요)
+*   **관리**: Docker Compose를 통해 `mongo` 서비스로 실행됩니다. 데이터는 Docker 볼륨에 저장됩니다.
+
+## 8. 환경 변수
+
+주요 환경 변수는 다음과 같습니다.
+
+*   **`DATABASE_NAME`** (`deploy/.env`, `.env.test`): API 서버 및 테스트에서 사용할 MongoDB 데이터베이스 이름.
+*   **`FRONTEND_API_ENDPOINT`** (프로젝트 루트 `.env`, Docker 빌드 인자): Yew 프론트엔드가 API 요청 시 사용할 기본 경로 (예: `/api/v1`). `yew.Dockerfile` 빌드 시점에 주입됩니다.
+*   **(기타 MongoDB 관련 변수)**: `MONGO_INITDB_ROOT_USERNAME`, `MONGO_INITDB_ROOT_PASSWORD` 등 (필요시 `docker-compose.yml` 및 `deploy/.env`에 정의).
+*   **(기타 Rocket 관련 변수)**: `ROCKET_ADDRESS`, `ROCKET_PORT` 등 (필요시 설정).
+
+## 9. 보안 고려 사항
+
+현재 프로토타입 단계로, 다음과 같은 보안 요소들이 **미구현** 상태입니다. 실제 운영 환경 배포 전 반드시 보완해야 합니다.
+
+*   사용자 인증 및 인가 시스템
+*   역할 기반 접근 제어 (RBAC)
+*   API 요청 속도 제한 (Rate Limiting)
+*   입력 데이터 유효성 검사 강화
+*   MongoDB 보안 강화 (네트워크 접근 제한, 사용자 인증, TLS 암호화 등)
+*   보안 관련 HTTP 헤더 추가 (CSP, HSTS, X-Frame-Options 등)
+*   HTTPS 강제 적용 및 설정 검증
+*   의존성 보안 취약점 점검
+
+## 10. 향후 개선 사항
+
+*   프론트엔드 테스트 전략 수립 및 구현
+*   상세한 데이터 모델 정의 및 문서화
+*   로깅 및 모니터링 시스템 구축
+*   CI/CD 파이프라인 구축
+*   위에 명시된 보안 고려 사항 구현
