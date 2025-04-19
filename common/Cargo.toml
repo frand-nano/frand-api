@@ -1,0 +1,7 @@
+[package]
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+name = "frand-api-common"
+description = "frand API 서비스의 공통 라이브러리"

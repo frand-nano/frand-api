@@ -46,6 +46,14 @@ server {
         add_header Cache-Control "public, max-age=604800";
     }
 
+    # Yew Frontend 정적 파일 서빙 설정
+    location / {
+        root /usr/share/nginx/yew/dist;
+        try_files $uri $uri/ /index.html;
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    }
+
     # 로깅
     access_log /var/log/nginx/access.log;
     error_log /var/log/nginx/error.log;

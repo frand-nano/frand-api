@@ -1,7 +1,7 @@
 # 기술 명세
 ## 프로젝트 정보
   * 라이선스: MIT
-  * 초기 버전: 0.1.0
+  * 초기 버전: 0.1.1
   * 개발자: frand-nano <frand.nano@gmail.com>
 
 ## 프로젝트 구조
@@ -13,16 +13,19 @@
     │   └── src/      # API 소스 코드
     │       ├── main.rs
     │       ├── lib.rs
-    │       ├── config.rs
-    │       ├── error.rs
+    │       ├── config.rs # 설정 관리
+    │       ├── error.rs  # 오류 정의
     │       └── routes/
-    │           └── health.rs
-    ├── yew/          # Rust Yew 프론트엔드 (향후 추가 예정)
+    │           └── health.rs # 라우트 핸들러
+    ├── yew/          # Rust Yew 프론트엔드
     │   ├── Cargo.toml
-    │   ├── Trunk.toml
     │   ├── index.html
     │   └── src/
     │       └── main.rs
+    ├── common/       # API와 Yew 간 공통 코드
+    │   ├── Cargo.toml
+    │   └── src/
+    │       └── lib.rs
     ├── docs/         # 프로젝트 문서화
     │   ├── spec.md   # 기술 명세
     │   └── guide.md  # 구현 가이드
@@ -41,12 +44,14 @@
     │   │   └── gen_certs.sh # TLS 인증서 생성 스크립트
     │   └── static/   # Nginx에서 서빙할 정적 파일 위치 (볼륨 마운트 대상)
     ├── Cargo.toml    # 워크스페이스 설정
+    ├── Trunk.toml    # Yew 빌드 도구 설정
     ├── .gitignore
     └── .dockerignore # Docker 빌드 시 제외할 파일 목록
     ```
   * `api/src` 내부에 `config`, `routes`, `error`, `handlers`, `models`, `services` 등의 모듈 구조 사용
   * `deploy/` 폴더 내에는 빌드된 이미지와 배포 관련 파일(docker-compose.yml, nginx 설정 등)을 위치시켜 해당 폴더만으로 배포 가능하도록 구성.
-  * `yew/` 폴더는 향후 Yew 프론트엔드 관련 파일을 위치시키고, Trunk 빌드 도구를 사용하여 WASM 앱을 빌드하도록 구성 예정.
+  * `yew/` 폴더는 Yew 프론트엔드 관련 파일을 위치시키고, Trunk 빌드 도구를 사용하여 WASM 앱을 빌드.
+  * `common/` 폴더는 API 백엔드와 Yew 프론트엔드 간에 공유되는 코드 (예: 데이터 모델)를 위치시킴.
 
 ## 의존성
   * **Backend (API)**
@@ -55,6 +60,7 @@
     * 로깅: `log`, `simple_logger` 크레이트 사용 (터미널 출력)
     * 오류 처리: `anyhow`, `thiserror` 사용.
       - (추천 방식) `thiserror`로 사용자 정의 오류 타입을 정의하고, Rocket의 `Responder`를 구현하여 오류를 적절한 HTTP 응답으로 변환하는 방식 고려.
+    * 공통 코드: `frand-api-common` 크레이트 (워크스페이스 내)
     * 설정 관리:
         - API 서버 내부 설정: `config` 크레이트 사용 (프로젝트 루트 `config/default.toml`, `config/test.toml` 파일 활용)
         - 배포 관련 설정: `deploy/.env` 파일 사용 (Docker Compose 및 Nginx entrypoint에서 사용)
@@ -62,13 +68,14 @@
         - 주요 설정 항목 (.env 기준): `LOG_LEVEL`, `ROCKET_ADDRESS`, `ROCKET_PORT`, `ROCKET_API_ENDPOINT`, `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT` 등 배포 환경에 필요한 값
     * 시간 처리: `chrono` 크레이트 사용 (필요시 `serde` 기능 활성화)
   * **Frontend (Yew)** (향후 추가 예정)
-    * 프로그래밍 언어: Rust
+    * 프로그래밍 언어: Rust (WASM)
     * 웹 프레임워크: Yew v0.21
     * 상태 관리: Yew의 Hooks API 사용 (`use_state`, `use_effect_with` 등)
     * UI 라이브러리: Bootstrap 5 (CDN)
-    * HTTP 클라이언트: `gloo-net` 크레이트 사용
+    * HTTP 클라이언트: `gloo-net` 크레이트 사용 (향후 추가 예정)
     * 로깅: `wasm-logger` 및 `gloo-console` 크레이트 사용 (브라우저 콘솔 출력)
     * 빌드 도구: Trunk
+    * 공통 코드: `frand-api-common` 크레이트 (워크스페이스 내)
   * **Deployment & Infrastructure**
     * 컨테이너 오케스트레이션: Docker Compose (`deploy/docker-compose.yml` 사용)
       * 관리 대상 서비스: `api`, `nginx`
@@ -79,12 +86,14 @@
           - `deploy/nginx/template_replace.sh` -> `/etc/nginx/template_replace.sh` (`nginx` 서비스)
           - `deploy/certs` -> `/etc/nginx/certs` (읽기 전용, TLS 인증서, `nginx` 서비스)
           - `deploy/static` -> `/usr/share/nginx/static` (읽기 전용, Nginx 정적 파일 서빙용, `nginx` 서비스)
+          - (빌드 시) Yew 빌드 결과물 (`yew/dist`) -> `/usr/share/nginx/yew/dist` (`nginx` 서비스)
       * 서비스 커맨드:
           - `nginx`: `/bin/sh /etc/nginx/template_replace.sh` 실행 (Nginx 설정 적용 및 실행)
     * 웹 서버 / 리버스 프록시: Nginx (`nginx` 서비스 내에서 실행)
-      * 역할: API 서버(`api` 서비스)로의 리버스 프록시 (`${ROCKET_API_ENDPOINT}/`), 정적 파일 서빙 (`/static/`), HTTPS 처리
+      * 역할: API 서버(`api` 서비스)로의 리버스 프록시 (`${ROCKET_API_ENDPOINT}/`), Yew 프론트엔드 서빙 (`/`), 정적 파일 서빙 (`/static/`), HTTPS 처리
       * HTTPS 설정: `deploy/certs/` 경로에 볼륨 마운트된 `cert.pem`, `privkey.pem` 파일 사용. HTTP 요청은 HTTPS로 리다이렉션.
       * Nginx 설정 동적 적용: `template_replace.sh` 스크립트가 컨테이너 시작 시 `.env` 파일의 환경 변수를 참조하여 `nginx.conf.template`에 값을 적용, 최종 설정 생성.
+      * Yew 프론트엔드 서빙: `/usr/share/nginx/yew/dist` 디렉토리의 파일을 루트 경로(`/`)로 서빙. `try_files`를 사용하여 SPA 라우팅 지원.
       * 정적 파일 서빙: `deploy/static` 폴더를 볼륨 마운트하여 `/usr/share/nginx/static/` 경로로 서빙.
     * **Docker Base Images**
       * Rust Build (API): `rust:1.86-slim` (Multi-stage 빌드 활용)
@@ -99,10 +108,11 @@
       - 향후 데이터베이스 연결 상태 등 추가 정보 포함 예정.
   * **Nginx**
     * API 서버로 요청 프록시
+    * Yew 프론트엔드 정적 파일 서빙 (루트 경로 `/`)
     * HTTP 요청을 HTTPS로 자동 리다이렉션
     * `/static/` 경로로 정적 파일 서빙
   * **Frontend (Yew)** (향후 추가 예정)
-    * 초기 기능: 루트 경로(`/`)에서 백엔드의 `/api/v1/health` 엔드포인트를 호출하여 상태 표시.
+    * 초기 기능: 루트 경로(`/`)에 간단한 환영 메시지 표시. (API 호출은 향후 추가)
     * Bootstrap 기반의 반응형 UI 제공
     * API 오류 시 적절한 오류 메시지 표시
 

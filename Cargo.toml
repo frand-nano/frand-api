@@ -6,6 +6,4 @@ license = "MIT"
 
 [workspace]
 resolver = "2"
-members = [
-    "api",
-]
+members = ["api", "yew", "common"]

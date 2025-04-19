@@ -3,10 +3,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-name = "api"
+name = "frand-api"
 description = "frand API 서비스 핵심 구현"
 
 [dependencies]
+frand-api-common = { path = "../common" }
 anyhow = "1.0"
 dotenvy = "0.15"
 log = "0.4"

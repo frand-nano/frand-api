@@ -1,0 +1,13 @@
+[package]
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+name = "frand-api-yew"
+description = "frand API 서비스의 Yew 프론트엔드"
+
+[dependencies]
+frand-api-common = { path = "../common" }
+yew = { version = "0.21", features = ["csr"] }
+yew-bootstrap = "0.11"
+wasm-logger = "0.2"

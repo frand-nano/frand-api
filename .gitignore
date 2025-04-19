@@ -1,4 +1,5 @@
 /target
+/yew/dist
 Cargo.lock
 .env
 *.pem

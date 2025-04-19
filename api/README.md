@@ -9,6 +9,7 @@ Rust와 Rocket 프레임워크를 사용하여 구축된 API 서버입니다.
 *   **로깅:** `log`, `simple_logger`
 *   **오류 처리:** `anyhow`, `thiserror`
 *   **설정 관리:** `dotenvy` (환경 변수 로딩)
+*   **공통 코드:** `frand-api-common` (워크스페이스 내)
 
 자세한 기술 명세는 프로젝트 루트의 [`../docs/spec.md`](../docs/spec.md) 파일을 참고하세요.
 
@@ -66,7 +67,7 @@ URL 경로에 버전을 포함하는 방식을 사용합니다. API 기본 경�
     ```bash
     cargo run --package api
     ```
-    *   기본적으로 프로젝트 루트의 `.env` 설정을 사용합니다.
+    *   기본적으로 프로젝트 루트의 `.env` 설정을 사용합니다. (정확히는 `frand-api` 패키지를 실행합니다.)
 
 ### Docker 사용
 
@@ -84,7 +85,7 @@ URL 경로에 버전을 포함하는 방식을 사용합니다. API 기본 경�
 통합 테스트 위주로 진행하며, Rocket의 `LocalClient`를 활용합니다. 테스트 실행 명령어는 다음과 같습니다.
 
 ```bash
-cargo test --package api
+cargo test --package frand-api
 ```
 *   테스트 시에는 프로젝트 루트의 `.env` 파일을 로드하여 설정을 사용합니다. (`api/tests/test_util.rs`에서 `../.env` 로드)
 

@@ -4,9 +4,9 @@
 
 ## 파일 설명
 
-*   `api.dockerfile`: API 서버를 빌드하기 위한 Dockerfile입니다. 멀티 스테이지 빌드를 사용하여 최종 이미지 크기를 최적화합니다.
-*   `nginx.dockerfile`: Nginx 서비스를 빌드하기 위한 Dockerfile입니다.
-*   `docker-compose.yml`: Docker Compose를 사용하여 API 및 Nginx 서비스를 쉽게 실행하고 관리하기 위한 설정 파일입니다.
+*   `api.dockerfile`: API 서버를 빌드하기 위한 Dockerfile입니다. 멀티 스테이지 빌드를 사용하여 최종 이미지 크기를 최적화합니다. (`common` 크레이트 포함)
+*   `nginx.dockerfile`: Yew 프론트엔드를 빌드하고, Nginx 이미지를 생성하여 정적 파일 및 API 프록시를 서빙하기 위한 Dockerfile입니다. (`yew`, `common` 크레이트 포함)
+*   `docker-compose.yml`: Docker Compose를 사용하여 `api` 및 `nginx` 서비스를 쉽게 실행하고 관리하기 위한 설정 파일입니다.
 *   `.env.example`: 필요한 환경 변수 예시 파일입니다. 실제 배포 시에는 이 파일을 복사하여 `.env` 파일을 생성하고 값을 설정해야 합니다.
 *   `nginx/`: Nginx 관련 설정 파일 및 스크립트
     *   `nginx.conf.template`: Nginx 설정 템플릿 파일입니다. 환경 변수를 사용하여 동적으로 설정됩니다.
@@ -14,6 +14,7 @@
 *   `certs/`: TLS 인증서 파일을 저장하는 디렉토리입니다.
     *   `gen_certs.sh`: 로컬 개발 및 테스트용 자체 서명 TLS 인증서(`cert.pem`, `privkey.pem`)를 생성하는 스크립트입니다. **주의: 프로덕션 환경에서는 신뢰할 수 있는 인증 기관(CA)에서 발급받은 인증서를 사용해야 합니다.**
 *   `static/`: Nginx를 통해 서빙될 정적 파일(예: 프론트엔드 빌드 결과물, 이미지 등)을 위치시키는 디렉토리입니다.
+    *   **참고:** Yew 프론트엔드 빌드 결과물은 `nginx.dockerfile` 내에서 빌드되어 이미지에 포함되므로, 이 디렉토리에 직접 넣을 필요는 없습니다. 이 디렉토리는 추가적인 정적 파일(예: favicon.ico)을 위해 사용될 수 있습니다.
 
 ## 실행 방법
 
@@ -31,7 +32,7 @@
     ```bash
     docker-compose up -d --build
     ```
-    *   `-d`: 백그라운드에서 실행합니다.
+    *   `-d`: 백그라운드에서 실행합니다. Yew 프론트엔드는 `http://localhost:${NGINX_HTTP_PORT}` 또는 `https://localhost:${NGINX_HTTPS_PORT}` 로 접근할 수 있습니다.
     *   `--build`: 이미지를 새로 빌드합니다. (최초 실행 또는 Dockerfile 변경 시 필요)
     *   이제 `http://localhost:${NGINX_HTTP_PORT}` 또는 `https://localhost:${NGINX_HTTPS_PORT}` 로 접근할 수 있습니다. (HTTP는 HTTPS로 자동 리다이렉션됩니다.) API는 `https://localhost:${NGINX_HTTPS_PORT}${ROCKET_API_ENDPOINT}/` 경로로 접근 가능합니다.
 

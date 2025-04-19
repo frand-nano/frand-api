@@ -1,0 +1,9 @@
+[build]
+target = "yew/index.html"
+dist = "yew/dist"
+
+[watch]
+watch = ["yew/src", "yew/index.html"]
+
+[serve]
+port = 8000
