@@ -5,3 +5,7 @@ authors.workspace = true
 license.workspace = true
 name = "frand-api-common"
 description = "frand API 서비스의 공통 라이브러리"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

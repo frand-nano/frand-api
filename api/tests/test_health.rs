@@ -7,7 +7,7 @@ mod test_util;
 fn test_health() -> anyhow::Result<()> {
     let config = new_test_env_config()?;
     let client = new_test_rocket_client()?;
-    let response = client.get(format!("{}/health", config.rocket_api_endpoint)).dispatch();
+    let response = client.get(format!("{}/health", config.rocket_api_endpoint())).dispatch();
     
     assert_eq!(response.status(), Status::Ok);
     
